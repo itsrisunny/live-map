@@ -1,12 +1,7 @@
-import { Routes, Route } from "react-router-dom";
-import MapPage from "./MapPage";
+import AppRoutes from "./routes/AppRoutes";
 
-function App() {
-  return (
-    <Routes>
-      <Route path="/map" element={<MapPage />} />
-    </Routes>
-  );
-}
+const App = () => {
+  return <AppRoutes />;
+};
 
 export default App;

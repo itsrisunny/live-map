@@ -1,70 +1,113 @@
-# Getting Started with Create React App
+# 🚗 Live Location Tracking – Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the frontend of a real-time live location tracking application built using **React** and **Mapbox**.
+It allows a user to share a tracking URL so others can view the driver’s live location on a map.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- 📍 Pickup and Drop locations via URL query parameters
+- 🗺 Mapbox map with route visualization
+- 🚗 Live driver tracking using WebSocket
+- 🔗 Shareable tracking URL
+- 🎨 Glassy UI with gradient header
+- 📐 Automatic map bounds adjustment (pickup + drop + live driver)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠 Tech Stack
 
-### `npm test`
+- React (Create React App)
+- Mapbox GL JS
+- react-map-gl
+- WebSocket (browser)
+- Custom React Hooks
+- Atomic Design component structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📂 Project Structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+src/
+├── components/
+│   ├── atoms/
+│   ├── molecules/
+│   └── organisms/
+├── hooks/
+├── utils/
+├── pages/
+├── routes/
+└── App.jsx
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+````
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🔑 Environment Setup
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Create a `.env` file in the project root directory:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```env
+REACT_APP_MAPBOX_TOKEN=YOUR_MAPBOX_ACCESS_TOKEN
+````
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+You can generate a token from:
+[https://www.mapbox.com/](https://www.mapbox.com/)
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## ▶️ Installation & Run
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm install
+npm start
+```
 
-### Code Splitting
+The application will start at:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
+http://localhost:3000
+```
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🔗 Usage
 
-### Making a Progressive Web App
+### 🚘 Sender (Driver)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Open the following URL on a mobile device or browser:
 
-### Advanced Configuration
+```
+http://localhost:3000/map?pickupLat=12.9716&pickupLng=77.5946&dropLat=12.9121&dropLng=77.6446
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+* Allow location access
+* The driver’s live location will be sent through WebSocket
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### 👨‍👩‍👧 Viewer (Family / Friends)
 
-### `npm run build` fails to minify
+Open the following URL on any device:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+http://localhost:3000/map?pickupLat=12.9716&pickupLng=77.5946&dropLat=12.9121&dropLng=77.6446#viewer
+```
+
+* No location permission required
+* View the driver’s live movement on the map
+
+---
+
+## 🧪 Development Notes
+
+* Auto-move mode is enabled for local testing without GPS
+* Map bounds automatically update on live location changes
+* Recommended testing setup:
+
+  * Sender → Mobile phone
+  * Viewer → Laptop / Desktop
+
