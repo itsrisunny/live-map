@@ -1,7 +1,13 @@
 import mapboxgl from "mapbox-gl";
 
-export const getBoundsFromPoints = (points) => {
+export const getBoundsFromPoints = (points = []) => {
+  if (!Array.isArray(points) || points.length === 0) {
+    return null;
+  }
+
   const bounds = new mapboxgl.LngLatBounds();
+
+  let hasValidPoint = false;
 
   points.forEach((p) => {
     if (
@@ -13,10 +19,10 @@ export const getBoundsFromPoints = (points) => {
       p.lng >= -180 &&
       p.lng <= 180
     ) {
-      // 🔑 IMPORTANT: [lng, lat] ORDER
-      bounds.extend([p.lng, p.lat]);
+      bounds.extend([p.lng, p.lat]); // [lng, lat]
+      hasValidPoint = true;
     }
   });
 
-  return bounds;
+  return hasValidPoint ? bounds : null;
 };

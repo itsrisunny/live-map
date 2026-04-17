@@ -4,14 +4,21 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "deploy": "gcloud run deploy live-map-socket --source . --region us-central1 --allow-unauthenticated",
+    "deploy:quick": "gcloud run deploy live-map-socket --source .",
+    "logs": "gcloud run services logs read live-map-socket --region us-central1",
+    "builds": "gcloud builds list --region=us-central1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.1",
     "ws": "^8.18.3"
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MAPBOX_TOKEN } from "../utils/constants";
 
 const useRoute = (pickup, drop) => {
   const [route, setRoute] = useState(null);
@@ -9,7 +10,7 @@ const useRoute = (pickup, drop) => {
     const fetchRoute = async () => {
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/` +
         `${pickup.lng},${pickup.lat};${drop.lng},${drop.lat}` +
-        `?geometries=geojson&access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`;
+        `?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
 
       const res = await fetch(url);
       const data = await res.json();

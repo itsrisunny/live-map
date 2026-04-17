@@ -1,0 +1,32 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build output (Docker builds inside container)
+build
+websocket
+
+
+# Git
+.git
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# IDE
+.vscode
+.idea
+
+# Coverage
+coverage
+
+# Misc
+README.md

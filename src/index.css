@@ -27,7 +27,7 @@ code {
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 360px;
+  min-width: 310px;
   padding: 14px 22px;
   background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(14px);

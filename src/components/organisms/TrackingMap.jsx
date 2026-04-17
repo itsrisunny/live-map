@@ -1,30 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl";
-import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { FaCar, FaMapMarkerAlt, FaFlagCheckered } from "react-icons/fa";
+import { FaFlagCheckered, FaCar } from "react-icons/fa";
 
 import IconMarker from "../atoms/IconMarker";
 import RouteLayer from "../atoms/RouteLayer";
 
 import useRoute from "../../hooks/useRoute";
-import useLiveLocationSender from "../../hooks/useLiveLocationSender";
 import useLiveLocationReceiver from "../../hooks/useLiveLocationReceiver";
 
 import { getDistanceKm } from "../../utils/distance";
+import { getBoundsFromPoints } from "../../utils/fitBounds";
+import { MAPBOX_TOKEN } from "../../utils/constants";
 
 const AVG_SPEED_KMPH = 30;
 
-const TrackingMap = ({ pickup, drop }) => {
+const TrackingMap = ({
+  pickup,
+  drop,
+  pickupPlace,
+  dropPlace,
+  rideId
+}) => {
   const mapRef = useRef(null);
-  const fittedOnceRef = useRef(false);
-
-  const isViewer = window.location.hash === "#viewer";
-
+  const [mapLoaded, setMapLoaded] = useState(false);
   const route = useRoute(pickup, drop);
-  useLiveLocationSender(!isViewer);
-  const liveLocation = useLiveLocationReceiver();
+  const liveLocation = useLiveLocationReceiver(rideId);
 
   const totalDistanceKm = route?.distance
     ? route.distance / 1000
@@ -50,43 +52,46 @@ const TrackingMap = ({ pickup, drop }) => {
     etaFromMapboxMin ?? etaFromSpeedMin
   );
 
-  /* INITIAL FIT */
+  /**
+   * 🔥 Unified Fit Bounds Logic
+   * Runs when:
+   * - pickup changes (status change)
+   * - drop changes (status change)
+   * - liveLocation changes (driver moving)
+   */
   useEffect(() => {
-    if (!mapRef.current || fittedOnceRef.current) return;
+    if (!mapRef.current) return;
 
-    const bounds = new mapboxgl.LngLatBounds();
-    bounds.extend([pickup.lng, pickup.lat]);
-    bounds.extend([drop.lng, drop.lat]);
+    const map = mapRef.current.getMap();
 
-    mapRef.current.fitBounds(bounds, {
-      padding: 120,
-      duration: 900,
-      maxZoom: 15,
-    });
+    const points = liveLocation
+      ? [pickup, drop, liveLocation]
+      : [pickup, drop];
 
-    fittedOnceRef.current = true;
-  }, [pickup, drop]);
+    const bounds = getBoundsFromPoints(points);
 
-  /* LIVE FIT */
-  useEffect(() => {
-    if (!mapRef.current || !liveLocation) return;
+    if (!bounds) return;
 
-    const bounds = new mapboxgl.LngLatBounds();
-    bounds.extend([pickup.lng, pickup.lat]);
-    bounds.extend([drop.lng, drop.lat]);
-    bounds.extend([liveLocation.lng, liveLocation.lat]);
+    const fit = () => {
+      map.fitBounds(bounds, {
+        padding: {
+          top: 250,
+          bottom: 120,
+          left: 120,
+          right: 120,
+        },
+        duration: 800,
+        maxZoom: 18,
+      });
+    };
 
-    mapRef.current.fitBounds(bounds, {
-      padding: {
-        top: 250,
-        bottom: 120,
-        left: 120,
-        right: 120,
-      },
-      duration: 800,
-      maxZoom: 15,
-    });
-  }, [liveLocation, pickup, drop]);
+    if (!map.isStyleLoaded()) {
+      map.once("load", fit);
+    } else {
+      fit();
+    }
+
+  }, [pickup, drop, liveLocation, mapLoaded]);
 
   return (
     <div className="map_container">
@@ -139,28 +144,28 @@ const TrackingMap = ({ pickup, drop }) => {
       {/* MAP */}
       <Map
         ref={mapRef}
-        mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+         onLoad={() => setMapLoaded(true)}
+        mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={{
           latitude: pickup.lat,
           longitude: pickup.lng,
           zoom: 13,
         }}
-        className="map_canvas"
+        className="map_canvas tes"
         mapStyle="mapbox://styles/mapbox/dark-v11"
         dragPan={false}
         dragRotate={false}
-        scrollZoom={false}
-        doubleClickZoom={false}
-        touchZoomRotate={false}
-        keyboard={false}
+        scrollZoom={true}
+        doubleClickZoom={true}
+        touchZoomRotate={true}
       >
         <RouteLayer geometry={route} />
 
         <IconMarker
           lat={pickup.lat}
           lng={pickup.lng}
-          icon={<FaMapMarkerAlt />}
-          label="Pickup"
+          icon={<FaCar />}
+          label="Driver"
           color="#22C55E"
         />
 
@@ -168,19 +173,9 @@ const TrackingMap = ({ pickup, drop }) => {
           lat={drop.lat}
           lng={drop.lng}
           icon={<FaFlagCheckered />}
-          label="Drop"
+          label={dropPlace}
           color="#EF4444"
         />
-
-        {liveLocation && (
-          <IconMarker
-            lat={liveLocation.lat}
-            lng={liveLocation.lng}
-            icon={<FaCar />}
-            label="Driver"
-            color="#38BDF8"
-          />
-        )}
       </Map>
     </div>
   );
