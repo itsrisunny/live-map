@@ -22,6 +22,8 @@ dist/
 .env.test.local
 .env.production
 .env.production.local
+websocket/serviceAccountKey.json
+websocket/serviceAccountKey-old.json
 
 # ================================
 # Logs
