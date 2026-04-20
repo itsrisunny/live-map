@@ -8,14 +8,14 @@ const getEnvironmentFromHost = (host) => {
   if (!host) return "dev_env"; 
   
   if (host.includes("localhost") || host.includes("127.0.0.1")) {
-    return "dev_env";
+    return "prod_env";
   }
   
   if (host.includes("api-dev.track.yeapnigaadi.com")) {
     return "dev_env";
   }
   
-  if (host.includes("api.track.yeapnigaadi.com")) {
+  if (host.includes("api.track.yeapnigaadi.com") || host.includes("admin.yeapnigaadi.com")) {
     return "prod_env";
   }
 
@@ -31,13 +31,25 @@ const initLocationSocket = (server) => {
   server.on("connection", (ws, req) => {
     const host = req.headers.host;
     ws.env = getEnvironmentFromHost(host);
-    logger.info(`Client connected to ${ws.env} environment`);
 
     ws.rideId = null;
+    ws.role = null;
+    ws.userId = null;
+    ws.consumerId = null;
+    ws.fleetManagerId = null;
 
     ws.on("message", async (message) => {
       try {
         const data = JSON.parse(message.toString());
+        if (data.role) {
+          ws.role = data.role;
+          ws.userId = data.userId;
+          ws.consumerId = data.consumerId;
+          ws.fleetManagerId = data.fleetManagerId;
+          return;
+        }
+        if (ws.role === "admin") return;
+
         /**
          * STEP 1 — Subscribe to Ride
          */
@@ -83,14 +95,41 @@ const initLocationSocket = (server) => {
               data: updatedLocation,
             });
 
-            broadcastToAdmins({
+            const ride = await controller.subscribeToRide(ws.rideId, ws.env);
+            const payload = {
               type: "driverLocation",
               data: {
                 rideId: ws.rideId,
+                rideData: {
+                  vehicle: ride?.vehicle || null,
+                  driverName: ride?.driverName || null,
+                  customerName: ride?.customerName || null,
+                  drop: ride?.requestedDropPlace || null,
+                  customerId: ride?.customerId || null,
+                  fleetManagerId: ride?.fleetManagerId || null,
+                },
                 lat: updatedLocation.lat,
                 lng: updatedLocation.lng,
                 updatedAt: new Date().toISOString(),
               },
+            };
+            broadcastToAdmins(payload);
+            server.clients.forEach((client) => {
+              if (client.readyState !== WebSocket.OPEN) return;
+
+              if (
+                client.role === "consumer" &&
+                client.customerId === payload.data.customerId
+              ) {
+                client.send(JSON.stringify(payload));
+              }
+
+              if (
+                client.role === "fleet-manager" &&
+                client.fleetManagerId === payload.data.rideData.fleetManagerId
+              ) {
+                client.send(JSON.stringify(payload));
+              }
             });
           }
 
