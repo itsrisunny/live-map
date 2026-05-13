@@ -107,6 +107,7 @@ const initLocationSocket = (server) => {
                   drop: ride?.requestedDropPlace || null,
                   customerId: ride?.customerId || null,
                   fleetManagerId: ride?.fleetManagerId || null,
+                  rideStatus: ride?.rideStatus,
                 },
                 lat: updatedLocation.lat,
                 lng: updatedLocation.lng,
@@ -146,19 +147,55 @@ const initLocationSocket = (server) => {
          */
         if (data.type === "statusUpdate") {
           const updatedStatus = await controller.handleStatusUpdate(ws.rideId, data.status, ws.env);
-
           if (updatedStatus) {
             broadcastToRide(server, ws.rideId, {
               type: "statusUpdate",
               data: updatedStatus,
             });
+
+            const ride = await controller.subscribeToRide(ws.rideId, ws.env);
+            const payload = {
+              type: "driverLocation",
+              data: {
+                rideId: ws.rideId,
+                rideData: {
+                  vehicle: ride?.vehicle || null,
+                  driverName: ride?.driverName || null,
+                  customerName: ride?.customerName || null,
+                  drop: ride?.requestedDropPlace || null,
+                  customerId: ride?.customerId || null,
+                  fleetManagerId: ride?.fleetManagerId || null,
+                  rideStatus: data.status,
+                },
+                updatedAt: new Date().toISOString(),
+              },
+            };
+            broadcastToAdmins(payload);
+            server.clients.forEach((client) => {
+              if (client.readyState !== WebSocket.OPEN) return;
+
+              if (
+                client.role === "consumer" &&
+                client.customerId === payload.data.customerId
+              ) {
+                client.send(JSON.stringify(payload));
+              }
+
+              if (
+                client.role === "fleet-manager" &&
+                client.fleetManagerId === payload.data.rideData.fleetManagerId
+              ) {
+                client.send(JSON.stringify(payload));
+              }
+            });
+
           }
 
           return;
         }
 
       } catch (err) {
-        logger.error("Invalid message received", err);
+        logger.error("Invalid message received", err.message);
         ws.send(JSON.stringify({ error: "Invalid payload" }));
       }
     });

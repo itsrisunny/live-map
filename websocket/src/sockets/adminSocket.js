@@ -15,15 +15,15 @@ const initAdminSocket = (server) => {
         /**
          * Admin Registration
          */
-        if (data.role === "admin") {
+        if (data.role === "admin" || data.role === "fleet-operator" || data.role === "consumer") {
           ws.isAdmin = true;
           registerAdmin(ws);
 
-          logger.info("Admin connected");
+          logger.info(data.role);
 
           ws.send(JSON.stringify({
             type: "connected",
-            message: "Admin connected successfully",
+            message: `${data.role} connected successfully`,
           }));
 
           return;
@@ -38,7 +38,7 @@ const initAdminSocket = (server) => {
     ws.on("close", () => {
       if (ws.isAdmin) {
         removeAdmin(ws);
-        logger.info("Admin disconnected");
+        logger.info(`${data.role} disconnected`);
       }
     });
 

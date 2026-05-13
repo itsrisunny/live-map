@@ -1,5 +1,5 @@
 const hostname = window.location.hostname;
-const MAPBOX_TOKEN = "pk.eyJ1IjoiaXRzcmlzdW5ueSIsImEiOiJjbWppZHFvZWcwNDBzM2dveTF4ZHZ2ZTRwIn0.OrCLgkGTiK-PWKGVTa-cLg";
+const MAPBOX_TOKEN = "pk.eyJ1IjoiYXBuaS1nYWFkaS1tb2JpbGl0eSIsImEiOiJjbXAzamFvdHEwc2NtMnBzZHJuMXlmdDE2In0.4tLFLq5BzH3GZDhwaU-ZhA";
 let API_URL;
 let WS_URL;
 
@@ -16,7 +16,5 @@ else {
   API_URL = "https://api.apnigadi.com/api";
   WS_URL = "wss://api.track.yeapnigaadi.com";
 }
-
-console.log("Using WS:", WS_URL);
 
 export { API_URL, WS_URL, MAPBOX_TOKEN };
